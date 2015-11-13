@@ -2,7 +2,29 @@ require 'rubygems'
 require 'sinatra'
 require 'pry'
 
-set :sessions, true
+use Rack::Session::Cookie, :key => 'rack.session',
+                           :path => '/',
+                           :secret => 'asdflina1wer33$$' 
+
+helpers do
+  def get_total(hand)
+    total = 0
+    face_values = hand.map { |card| card[1] }
+    face_values.each do |value|
+      if /A/.match(value)
+        total += 11
+      else
+        total += (value.to_i == 0 ? 10 : value.to_i)
+      end
+    end
+
+    face_values.select { |value| value == "A"}.count.times do
+      break if total <=21
+      total -= 10
+    end
+    total
+  end
+end
 
 get "/"  do
   erb :set_name
@@ -23,7 +45,6 @@ get "/game" do
     session[:dealer_cards] << session[:deck].pop
     session[:player_cards] << session[:deck].pop
     session[:dealer_cards] << session[:deck].pop
-    binding.pry
   end
   erb :game
 end

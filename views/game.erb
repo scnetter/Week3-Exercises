@@ -8,6 +8,8 @@
     </li>
   </ul>
 <% end %>
+Your total is: <%= get_total(session[:player_cards]) %>
+<br />
 
 <h5>Dealer Cards:</h5>
 <% session[:dealer_cards].each do |card| %>
@@ -17,4 +19,5 @@
     </li>
   </ul>
 <% end %>
+Dealer total is: <%= get_total(session[:dealer_cards]) %>
 <a href='/reset'>Reset Game</a>
