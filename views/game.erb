@@ -1,0 +1,20 @@
+<h4>Hi <%= session[:player_name] %>!</h4>
+
+<h5>Player <%= session[:player_name] %>'s Cards:</h5>
+<% session[:player_cards].each do |card| %>
+  <ul>
+    <li>
+      <%= card.to_s %>
+    </li>
+  </ul>
+<% end %>
+
+<h5>Dealer Cards:</h5>
+<% session[:dealer_cards].each do |card| %>
+  <ul>
+    <li>
+      <%= card.to_s %>
+    </li>
+  </ul>
+<% end %>
+<a href='/reset'>Reset Game</a>
