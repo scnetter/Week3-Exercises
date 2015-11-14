@@ -32,6 +32,7 @@ end
 
 post "/set_name" do
   session[:player_name] = params[:player_name]
+  session[:dealer_turn] = 0
   redirect "/game"
 end
 
@@ -41,12 +42,21 @@ get "/game" do
     session[:dealer_cards] = []
     session[:deck] = []
     session[:deck] = %w(S D H C).product(%w[2 3 4 5 6 7 8 9 10 J Q K A]).shuffle
-    session[:player_cards] << session[:deck].pop
-    session[:dealer_cards] << session[:deck].pop
-    session[:player_cards] << session[:deck].pop
-    session[:dealer_cards] << session[:deck].pop
+    2.times do
+      session[:player_cards] << session[:deck].pop
+      session[:dealer_cards] << session[:deck].pop
+    end
   end
   erb :game
+end
+
+get '/hit' do
+  session[:player_cards] << session[:deck].pop
+  erb :game
+end
+
+get '/stay' do
+
 end
 
 get '/reset' do

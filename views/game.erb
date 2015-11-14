@@ -20,4 +20,15 @@ Your total is: <%= get_total(session[:player_cards]) %>
   </ul>
 <% end %>
 Dealer total is: <%= get_total(session[:dealer_cards]) %>
-<a href='/reset'>Reset Game</a>
+
+<% if get_total(session[:player_cards]).to_i == 21 %>
+  <% session[:dealer_turn] = true %>
+  <a href='/game'><"Click to see Dealer's cards."</a>
+<% elsif get_total(session[:player_cards]).to_i > 21 %>
+  <% @error = "You busted!" %> 
+<% else %>
+  <br />
+  <a href='/hit' class='btn'>Hit</a> or <a href='/stay' class='btn'>Stay</a>
+<% end %>
+<br />
+<a href='/reset' class='btn'>Reset Game</a>
