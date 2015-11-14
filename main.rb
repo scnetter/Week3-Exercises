@@ -24,14 +24,41 @@ helpers do
     end
     total
   end
+
+  def user?
+    session[:player_name]
+  end
+
+  def deal
+    session[:deck].pop
+  end
+
+  def initial_deal
+    2.times do
+      session[:dealer_cards] << deal
+      session[:player_cards] << deal
+    end
+  end
 end
 
 get "/"  do
-  erb :set_name
+  if user?
+    session[:player_cards] = [] 
+    session[:dealer_cards] = []
+    session[:dealer_turn] = false
+    initial_deal
+    redirect '/game'
+  else
+    redirect '/new_player'
+  end
 end
 
-post "/set_name" do
-  session[:username] = params[:username]
+get '/new_player' do
+  erb :new_player
+end
+
+post "/new_player" do
+  session[:player_name] = params[:player_name]
   session[:dealer_turn] = false
   redirect "/game"
 end
@@ -41,11 +68,9 @@ get "/game" do
     session[:player_cards] = []
     session[:dealer_cards] = []
     session[:deck] = []
-    session[:deck] = %w(S D H C).product(%w[2 3 4 5 6 7 8 9 10 J Q K A]).shuffle
-    2.times do
-      session[:player_cards] << session[:deck].pop
-      session[:dealer_cards] << session[:deck].pop
-    end
+    session[:deck] = %w(S D H C).product(%w[2 3 4 5 6 7 8 9 10 J Q K A])
+    session[:deck].shuffle!
+    initial_deal
   end
   erb :game
 end
@@ -62,7 +87,7 @@ end
 
 get '/reset' do
   session.clear
-  erb :set_name
+  erb :new_player
 end
 
 

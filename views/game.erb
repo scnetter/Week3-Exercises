@@ -1,25 +1,33 @@
-<h4>BlackJack</h4>
+<h1>BlackJack</h1>
 
-<h5>Player <%= session[:username] %>'s Cards:</h5>
-<% session[:player_cards].each do |card| %>
-  <ul>
-    <li>
-      <%= card.to_s %>
-    </li>
-  </ul>
-<% end %>
-Your total is: <%= get_total(session[:player_cards]) %>
+
+<h4>Dealer Cards:</h4>
+  <div class='well'>
+    <% session[:dealer_cards].each do |card| %>
+      <ul>
+        <li>
+          <%= card.to_s %>
+        </li>
+      </ul>
+    <% end %>
+  </div>
+<h4>Dealer total is: <%= get_total(session[:dealer_cards]) %></h4>
+
+<h4>Player <%= session[:player_name] %>'s Cards:</h4>
+  <div class='well'>
+    <% session[:player_cards].each do |card| %>
+      <ul>
+        <li>
+          <%= card.to_s %>
+        </li>
+      </ul>
+    <% end %>
+  </div>
+<h4>
+  <%=session[:player_name] %>'s total: <%= get_total(session[:player_cards])%>
+</h4>
 <br />
 
-<h5>Dealer Cards:</h5>
-<% session[:dealer_cards].each do |card| %>
-  <ul>
-    <li>
-      <%= card.to_s %>
-    </li>
-  </ul>
-<% end %>
-Dealer total is: <%= get_total(session[:dealer_cards]) %>
 
 <% if get_total(session[:player_cards]).to_i == 21 %>
   <% session[:dealer_turn] = true %>
