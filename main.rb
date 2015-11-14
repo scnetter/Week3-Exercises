@@ -31,8 +31,8 @@ get "/"  do
 end
 
 post "/set_name" do
-  session[:player_name] = params[:player_name]
-  session[:dealer_turn] = 0
+  session[:username] = params[:username]
+  session[:dealer_turn] = false
   redirect "/game"
 end
 
@@ -56,13 +56,15 @@ get '/hit' do
 end
 
 get '/stay' do
-
+  session[:dealer_turn] = true
+  erb :game
 end
 
 get '/reset' do
   session.clear
   erb :set_name
 end
+
 
 
 

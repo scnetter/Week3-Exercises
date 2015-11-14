@@ -1,6 +1,6 @@
-<h4>Hi <%= session[:player_name] %>!</h4>
+<h4>BlackJack</h4>
 
-<h5>Player <%= session[:player_name] %>'s Cards:</h5>
+<h5>Player <%= session[:username] %>'s Cards:</h5>
 <% session[:player_cards].each do |card| %>
   <ul>
     <li>
@@ -23,12 +23,13 @@ Dealer total is: <%= get_total(session[:dealer_cards]) %>
 
 <% if get_total(session[:player_cards]).to_i == 21 %>
   <% session[:dealer_turn] = true %>
-  <a href='/game'><"Click to see Dealer's cards."</a>
+  <a href='/game' class='btn'>"Click to see Dealer's cards."</a>
 <% elsif get_total(session[:player_cards]).to_i > 21 %>
   <% @error = "You busted!" %> 
+<% elsif session[:dealer_turn] %>
+    <a href='/game' class='btn'>"Click to see Dealer's cards."</a>
 <% else %>
-  <br />
-  <a href='/hit' class='btn'>Hit</a> or <a href='/stay' class='btn'>Stay</a>
+  <div class='well'>
+    <a href='/hit' class='btn'>Hit</a> or <a href='/stay' class='btn'>Stay</a>
+  </div>
 <% end %>
-<br />
-<a href='/reset' class='btn'>Reset Game</a>
