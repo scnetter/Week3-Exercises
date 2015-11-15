@@ -2,15 +2,16 @@
 
 
 <h4>Dealer Cards:</h4>
-  <div class='well'>
+    <div class="well span10">
     <% session[:dealer_cards].each do |card| %>
       <ul>
-        <li>
-          <%= card.to_s %>
+        <li class='span1'>
+          <img src=<%= card_image_location(card) %> />
         </li>
       </ul>
     <% end %>
   </div>
+<br />
 <h4>Dealer total is: <%= get_total(session[:dealer_cards]) %></h4>
 
 <h4>Player <%= session[:player_name] %>'s Cards:</h4>
@@ -29,13 +30,10 @@
 <br />
 
 
-<% if get_total(session[:player_cards]).to_i == 21 %>
-  <% session[:dealer_turn] = true %>
-  <a href='/game' class='btn'>"Click to see Dealer's cards."</a>
-<% elsif get_total(session[:player_cards]).to_i > 21 %>
-  <% @error = "You busted!" %> 
+<% if @error || @success %>
+  Somebody lost or won.
 <% elsif session[:dealer_turn] %>
-    <a href='/game' class='btn'>"Click to see Dealer's cards."</a>
+  <a href='/stay' class='btn'>"Click to see Dealer's cards."</a>
 <% else %>
   <div class='well'>
     <a href='/hit' class='btn'>Hit</a> or <a href='/stay' class='btn'>Stay</a>

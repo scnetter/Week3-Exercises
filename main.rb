@@ -14,7 +14,7 @@ helpers do
       if /A/.match(value)
         total += 11
       else
-        total += (value.to_i == 0 ? 10 : value.to_i)
+        total += value.to_i == 0 ? 10 : value.to_i
       end
     end
 
@@ -38,6 +38,24 @@ helpers do
       session[:dealer_cards] << deal
       session[:player_cards] << deal
     end
+  end
+
+  def card_image_location(card)
+    suit = nil
+    face = nil
+    suits = {c: "clubs", d: "diamonds", s: "spades", h: "hearts"}
+    faces = {a: "ace", j: "jack", k: "king", q: "queen"}
+
+    card.each do |suit_or_value|
+      if suits.include?(suit_or_value.downcase.to_sym)
+        suit = suits[suit_or_value.downcase.to_sym]
+      elsif suit_or_value.to_i == 0
+        face = faces[suit_or_value.downcase.to_sym]
+      else
+        face = suit_or_value
+      end
+    end
+    "../images/cards/" + suit + "_" + face + ".jpg"
   end
 end
 
@@ -71,23 +89,48 @@ get "/game" do
     session[:deck] = %w(S D H C).product(%w[2 3 4 5 6 7 8 9 10 J Q K A])
     session[:deck].shuffle!
     initial_deal
+    session[:player_total] = get_total(session[:player_cards])
+    session[:dealer_total] = get_total(session[:dealer_cards])
+  end
+
+  if get_total(session[:player_cards]) == 21 
+    @success = "You hit BlackJack!"
   end
   erb :game
 end
 
 get '/hit' do
-  session[:player_cards] << session[:deck].pop
+  session[:player_cards] << deal
+  session[:player_total] = get_total(session[:player_cards])
+  if session[:player_total] > 21
+    @error = "Sorry, you busted!"
+    session[:dealer_turn] = true
+  elsif session[:player_total] == 21
+    @success = "Yeah!! You hit BlackJack!!"
+    session[:dealer_turn] = true
+  end
   erb :game
 end
 
 get '/stay' do
   session[:dealer_turn] = true
+  session[:dealer_total] = get_total(session[:dealer_cards])
+  if session[:dealer_total] < 17
+    session[:dealer_cards] << deal
+    session[:dealer_total] = get_total(session[:dealer_cards])
+    if session[:dealer_total] > 21
+      @error = "Dealer Busted!"
+      @success = "You win with a hand total of #{session[:player_total]}"
+      erb :game
+    end
+    erb :game
+  end
   erb :game
 end
 
 get '/reset' do
   session.clear
-  erb :new_player
+  redirect '/new_player'
 end
 
 
