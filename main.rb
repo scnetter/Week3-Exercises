@@ -40,7 +40,7 @@ helpers do
     end
   end
 
-  def card_image_location(card)
+  def card_image(card)
     suit = nil
     face = nil
     suits = {c: "clubs", d: "diamonds", s: "spades", h: "hearts"}
@@ -55,19 +55,24 @@ helpers do
         face = suit_or_value
       end
     end
-    "../images/cards/" + suit + "_" + face + ".jpg"
+    "<img class='card_image' src='/images/cards/#{suit}_#{face}.jpg' />"
+  end
+
+  def cover_image
+    "<img class='card_image' src='/images/cards/cover.jpg' />"
   end
 end
 
 before do
   @show_hit_or_stay_btns = true
+  @player_winner = nil
+  @dealer_winner = nil
 end
 
 get "/"  do
   if user?
     session[:player_cards] = [] 
     session[:dealer_cards] = []
-    session[:dealer_turn] = false
     initial_deal
     redirect '/game'
   else
@@ -80,9 +85,13 @@ get '/new_player' do
 end
 
 post "/new_player" do
+  if params[:player_name].empty?
+    @error = "Name is required."
+    halt erb :new_player
+  end
   session[:player_name] = params[:player_name]
   session[:dealer_turn] = false
-  redirect "/game"
+  redirect '/game'
 end
 
 get "/game" do
@@ -99,7 +108,7 @@ get "/game" do
 
   if get_total(session[:player_cards]) == 21 
     @show_hit_or_stay_btns = false
-    @success = "You hit BlackJack!"
+    @success = "#{session[:player_name]} hit BlackJack!"
   end
   erb :game
 end
@@ -109,17 +118,49 @@ post '/game/player/hit' do
   session[:player_total] = get_total(session[:player_cards])
   if session[:player_total] > 21
     @show_hit_or_stay_btns = false
-    @error = "Sorry, you busted!"
+    @error = "Sorry, #{session[:player_name]} busted!"
   elsif session[:player_total] == 21
-    @success = "Yeah!! You hit BlackJack!!"
+    @success = "Yeah!! #{session[:player_name]} hit BlackJack!!"
     @show_hit_or_stay_btns = false
   end
   erb :game
 end
 
 post '/game/player/stay' do
-  @success = "You have chosen to stay"
+  @success = "#{session[:player_name]} has chosen to stay."
   @show_hit_or_stay_btns = false
+  erb :game
+end
+
+post '/game/dealer/hit' do
+  @show_hit_or_stay_btns = false
+  if !session[:dealer_turn]
+    session[:dealer_turn] = true
+    halt erb :game
+  end
+
+
+  dealer_total = get_total(session[:dealer_cards])
+    
+  if dealer_total == 21
+    @dealer_winner = true
+    halt erb :game
+  elsif dealer_total < 17
+    session[:dealer_cards] << deal
+    if get_total(session[:dealer_cards]) > 21
+      @error = "Dealer Busts! #{session[:player_name]} wins!"
+      @player_winner = true
+      erb :game
+    elsif get_total(session[:dealer_cards]) == 21
+      @error = "Dealer wins!"
+      @dealer_winner = true
+      erb :game
+    else
+      session[:dealer_turn] = true
+      erb :game
+    end
+  end
+  session[:dealer_turn] = false
   erb :game
 end
 
