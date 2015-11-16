@@ -59,6 +59,10 @@ helpers do
   end
 end
 
+before do
+  @show_hit_or_stay_btns = true
+end
+
 get "/"  do
   if user?
     session[:player_cards] = [] 
@@ -94,37 +98,28 @@ get "/game" do
   end
 
   if get_total(session[:player_cards]) == 21 
+    @show_hit_or_stay_btns = false
     @success = "You hit BlackJack!"
   end
   erb :game
 end
 
-get '/hit' do
+post '/game/player/hit' do
   session[:player_cards] << deal
   session[:player_total] = get_total(session[:player_cards])
   if session[:player_total] > 21
+    @show_hit_or_stay_btns = false
     @error = "Sorry, you busted!"
-    session[:dealer_turn] = true
   elsif session[:player_total] == 21
     @success = "Yeah!! You hit BlackJack!!"
-    session[:dealer_turn] = true
+    @show_hit_or_stay_btns = false
   end
   erb :game
 end
 
-get '/stay' do
-  session[:dealer_turn] = true
-  session[:dealer_total] = get_total(session[:dealer_cards])
-  if session[:dealer_total] < 17
-    session[:dealer_cards] << deal
-    session[:dealer_total] = get_total(session[:dealer_cards])
-    if session[:dealer_total] > 21
-      @error = "Dealer Busted!"
-      @success = "You win with a hand total of #{session[:player_total]}"
-      erb :game
-    end
-    erb :game
-  end
+post '/game/player/stay' do
+  @success = "You have chosen to stay"
+  @show_hit_or_stay_btns = false
   erb :game
 end
 

@@ -2,40 +2,38 @@
 
 
 <h4>Dealer Cards:</h4>
-    <div class="well span10">
-    <% session[:dealer_cards].each do |card| %>
-      <ul>
-        <li class='span1'>
-          <img src=<%= card_image_location(card) %> />
-        </li>
-      </ul>
-    <% end %>
-  </div>
-<br />
-<h4>Dealer total is: <%= get_total(session[:dealer_cards]) %></h4>
+<div class="well">
+<ul>
+<% session[:dealer_cards].each do |card| %>
+    <li>
+      <%= card.to_s %>
+    </li>
+  <% end %>
+</ul>
+</div>
 
+<br />
+
+<div class='well'>
 <h4>Player <%= session[:player_name] %>'s Cards:</h4>
-  <div class='well'>
-    <% session[:player_cards].each do |card| %>
-      <ul>
-        <li>
-          <%= card.to_s %>
-        </li>
-      </ul>
-    <% end %>
-  </div>
-<h4>
+  <ul>
+  <% session[:player_cards].each do |card| %>
+    <li>
+      <%= card.to_s %>
+    </li>
+  <% end %>
+  </ul>
+</div>
+<p>
+
+  What would you like to do?
   <%=session[:player_name] %>'s total: <%= get_total(session[:player_cards])%>
-</h4>
-<br />
 
-
-<% if @error || @success %>
-  Somebody lost or won.
-<% elsif session[:dealer_turn] %>
-  <a href='/stay' class='btn'>"Click to see Dealer's cards."</a>
-<% else %>
-  <div class='well'>
-    <a href='/hit' class='btn'>Hit</a> or <a href='/stay' class='btn'>Stay</a>
-  </div>
+<% if @show_hit_or_stay_btns %>
+  <form id="hit_form" action="/game/player/hit" method='post'>
+    <input type="submit" class="btn btn-success" value="Hit" />
+  </form>
+  <form id="stay_form" action="/game/player/stay" method='post'>
+    <input type="submit" class="btn btn-warning" value="Stay" />
+  </form>
 <% end %>
