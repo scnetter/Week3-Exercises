@@ -85,8 +85,8 @@ get '/new_player' do
 end
 
 post "/new_player" do
-  if params[:player_name].empty?
-    @error = "Name is required."
+  if params[:player_name].empty? || params[:player_name].match(/[[:^alpha:]]/)
+    @error = "Name is required and must be only alphabetic characters."
     halt erb :new_player
   end
   session[:player_name] = params[:player_name]
