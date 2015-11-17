@@ -20,7 +20,8 @@
 
 <div class="well">
   <h4>Dealer's Cards:</h4>
-  <% if session[:dealer_turn] %>
+  <% if !@show_hit_or_stay_btns %>
+    <h5>Dealer's cards total: <%=get_total(session[:dealer_cards])%></h5>
     <% session[:dealer_cards].each do |card| %>
       <%= card_image(card) %> 
     <% end %>
@@ -28,9 +29,9 @@
     <%= cover_image %>
     <%= card_image(session[:dealer_cards][1]) %>
   <% end %>
-  <% if !@show_hit_or_stay_btns %>
+  <% if @show_dealer_hit_button %>
     <form action='/game/dealer/hit' method='post' >
-      <input type='submit' class='btn btn-primary' value="See Dealer's Next Card" />
+      <input type='submit' class='btn btn-primary' value="See Dealer's Next Card &rarr;" />
     </form>
   <% end %>
 </div>
@@ -43,8 +44,6 @@
     <%= card_image(card) %>
   <% end %>
 </div>
-
-  What would you like to do?
   <%=session[:player_name] %>'s total is <%= get_total(session[:player_cards])%>
 <p>
 <% if @show_hit_or_stay_btns %>

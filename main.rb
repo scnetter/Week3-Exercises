@@ -65,8 +65,6 @@ end
 
 before do
   @show_hit_or_stay_btns = true
-  @player_winner = nil
-  @dealer_winner = nil
 end
 
 get "/"  do
@@ -129,39 +127,47 @@ end
 post '/game/player/stay' do
   @success = "#{session[:player_name]} has chosen to stay."
   @show_hit_or_stay_btns = false
+  redirect '/game/dealer'
+end
+
+
+get '/game/dealer' do
+  @show_hit_or_stay_btns = false
+
+  dealer_total = get_total(session[:dealer_cards])
+
+  if dealer_total == 21
+    @error = "Sorry, Dealer has hit BlackJack."
+  elsif dealer_total > 21
+    @success = "#{session[:player_name]} wins! Dealer busted."
+  elsif dealer_total >= 17
+    redirect '/game/compare'
+  else
+    @show_dealer_hit_button = true
+  end
+
   erb :game
 end
 
 post '/game/dealer/hit' do
-  @show_hit_or_stay_btns = false
-  if !session[:dealer_turn]
-    session[:dealer_turn] = true
-    halt erb :game
-  end
+  session[:dealer_cards] << deal
+  redirect '/game/dealer'
+end
 
-
+get '/game/compare' do
+  player_total = get_total(session[:player_cards])
   dealer_total = get_total(session[:dealer_cards])
-    
-  if dealer_total == 21
-    @dealer_winner = true
-    halt erb :game
-  elsif dealer_total < 17
-    session[:dealer_cards] << deal
-    if get_total(session[:dealer_cards]) > 21
-      @error = "Dealer Busts! #{session[:player_name]} wins!"
-      @player_winner = true
-      erb :game
-    elsif get_total(session[:dealer_cards]) == 21
-      @error = "Dealer wins!"
-      @dealer_winner = true
-      erb :game
-    else
-      session[:dealer_turn] = true
-      erb :game
-    end
+  @show_hit_or_stay_btns = false
+  if player_total < dealer_total
+    @error = "Sorry, Dealer wins."
+  elsif player_total > dealer_total
+    @success = "#{session[:player_name]} wins!"
+  else
+    @success = "It's a push!"
   end
-  session[:dealer_turn] = false
+
   erb :game
+
 end
 
 get '/reset' do
