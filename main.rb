@@ -27,10 +27,6 @@ helpers do
     total
   end
 
-  def user?
-    session[:player_name]
-  end
-
   def deal
     session[:deck].pop
   end
@@ -87,15 +83,7 @@ before do
   @show_hit_or_stay_btns = true
 end
 
-get "/"  do
-  # if user?
-  #   session[:player_cards] = [] 
-  #   session[:dealer_cards] = []
-  #   initial_deal
-  #   redirect '/game'
-  # else
-  #   redirect '/new_player'
-  # end
+get '/' do
   redirect '/new_player'
 end
 
@@ -103,17 +91,16 @@ get '/new_player' do
   erb :new_player
 end
 
-post "/new_player" do
+post '/new_player' do
   if params[:player_name].empty? || params[:player_name].match(/[[:^alpha:]]/)
     @error = "Name is required and must be only alphabetic characters."
     halt erb :new_player
   end
   session[:player_name] = params[:player_name]
-  session[:dealer_turn] = false
   redirect '/game'
 end
 
-get "/game" do
+get '/game' do
   session[:turn] = session[:player_name]
   session[:player_cards] = []
   session[:dealer_cards] = []
@@ -179,7 +166,6 @@ get '/game/compare' do
   else
     tie!("Both #{session[:player_name]} and Dealer have #{player_total}.")
   end
-
   erb :game
 end
 
