@@ -3,11 +3,19 @@
 
   <h5>Welcome <%= session[:player_name] %></h5>
 
+  <% if !@play_again %>
+    <div class='well'>
+      Current bet is $<%= session[:player_bet] %>. 
+      Available funds: $<%= session[:player_funds] %>.
+    </div> 
+  <% end %> 
+
   <% if @play_again %>
-    <p>
+    <p>Your available funds: $<%= session[:player_funds] %>.</p>
       <strong>Play again?</strong>
       <a href='/game' class='btn btn-primary'>Yes</a>
       <a href='/game_over' class='btn btn-inverse'>No</a>
+
     <p>
   <% end %>
 

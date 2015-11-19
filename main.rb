@@ -1,8 +1,10 @@
 require 'rubygems'
 require 'sinatra'
+require 'pry'
 
 BLACKJACK_AMOUNT    = 21
 DEALER_HIT_MINIMUM  = 17
+INITIAL_PLAYER_FUNDS = 500.00
 
 use Rack::Session::Cookie, :key => 'rack.session',
                            :path => '/',
@@ -61,12 +63,14 @@ helpers do
   end
 
   def loser!(message)
+    session[:player_funds] -= session[:player_bet]    
     @show_hit_or_stay_btns = false
     @play_again = true
     @error = "<strong>#{session[:player_name]} lost.</strong> #{message}"
   end
 
   def winner!(message)
+    session[:player_funds] += session[:player_bet]
     @show_hit_or_stay_btns = false
     @play_again = true
     @success = "<strong>#{session[:player_name]} won!</strong> #{message}"
@@ -83,6 +87,10 @@ before do
   @show_hit_or_stay_btns = true
 end
 
+after do
+  session[:player_bet] == 0
+end
+
 get '/' do
   redirect '/new_player'
 end
@@ -97,6 +105,8 @@ post '/new_player' do
     halt erb :new_player
   end
   session[:player_name] = params[:player_name]
+  session[:player_funds] = INITIAL_PLAYER_FUNDS
+  session[:player_bet] = 0
   redirect '/game'
 end
 
@@ -109,8 +119,11 @@ get '/game' do
   session[:deck].shuffle!
   initial_deal
   player_total = get_total(session[:player_cards])
+  current_bet = session[:player_bet]
 
-  if player_total ==  BLACKJACK_AMOUNT 
+  if current_bet == 0 || current_bet > session[:player_funds]
+    redirect '/game/bet' 
+  elsif player_total ==  BLACKJACK_AMOUNT 
     winner!("#{session[:player_name]} hit BlackJack!")
   end
   erb :game
@@ -154,6 +167,22 @@ end
 post '/game/dealer/hit' do
   session[:dealer_cards] << deal
   redirect '/game/dealer'
+end
+
+get '/game/bet' do
+  erb :bet
+end
+
+post '/game/bet' do
+  binding.pry
+  current_bet = params[:player_bet]
+  if current_bet.to_i <= 0 || current_bet.to_i > session[:player_funds]
+    @error = "You can't bet 0 or more than $#{session[:player_funds]}."
+    erb :bet
+  else
+    session[:player_bet] = params[:player_bet].to_i
+    redirect '/game'
+  end
 end
 
 get '/game/compare' do
