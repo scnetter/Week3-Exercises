@@ -124,7 +124,7 @@ post '/game/player/hit' do
   elsif player_total ==  BLACKJACK_AMOUNT
     winner!("#{session[:player_name]} hit BlackJack!!")
   end
-  erb :game
+  erb :game, layout: false
 end
 
 post '/game/player/stay' do
