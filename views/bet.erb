@@ -1,8 +1,8 @@
 <h1>BlackJack</h1>
 
-<h5>Make a bet (between $0 and your <%= session[:player_funds] %>.</h5>
+<h5>Make a bet for this round up to $<%= session[:player_funds].to_i %>.</h5>
 
-<form action='/game/bet' method='post'class='inline-form'>
+<form action='/bet' method='post'class='form-inline'>
   <input type='text' name='player_bet'>
   <button type="submit" class='btn btn-primary'>Bet!</button>
 </form>

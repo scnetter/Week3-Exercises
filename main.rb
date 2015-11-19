@@ -4,7 +4,7 @@ require 'pry'
 
 BLACKJACK_AMOUNT    = 21
 DEALER_HIT_MINIMUM  = 17
-INITIAL_PLAYER_FUNDS = 500.00
+INITIAL_PLAYER_FUNDS = 500
 
 use Rack::Session::Cookie, :key => 'rack.session',
                            :path => '/',
@@ -66,20 +66,28 @@ helpers do
     session[:player_funds] -= session[:player_bet]    
     @show_hit_or_stay_btns = false
     @play_again = true
-    @error = "<strong>#{session[:player_name]} lost.</strong> #{message}"
+    @loser = "<strong>#{session[:player_name]} lost.</strong> #{message}"
   end
 
   def winner!(message)
     session[:player_funds] += session[:player_bet]
     @show_hit_or_stay_btns = false
     @play_again = true
-    @success = "<strong>#{session[:player_name]} won!</strong> #{message}"
+    @winner = "<strong>#{session[:player_name]} won!</strong> #{message}"
   end
 
   def tie!(message)
     @play_again = true
     @show_hit_or_stay_btns = false
-    @success = "<strong>It's a tie.</strong> #{message}"
+    @winner = "<strong>It's a tie.</strong> #{message}"
+  end
+
+  def check_and_set_name
+    if params[:player_name].empty? || params[:player_name].match(/[[:^alpha:]]/)
+      @error = "Name is required and must be only alphabetic characters."
+      halt erb :new_player
+    end
+    session[:player_name] = params[:player_name]
   end
 end
 
@@ -100,17 +108,14 @@ get '/new_player' do
 end
 
 post '/new_player' do
-  if params[:player_name].empty? || params[:player_name].match(/[[:^alpha:]]/)
-    @error = "Name is required and must be only alphabetic characters."
-    halt erb :new_player
-  end
-  session[:player_name] = params[:player_name]
+  check_and_set_name
   session[:player_funds] = INITIAL_PLAYER_FUNDS
   session[:player_bet] = 0
-  redirect '/game'
+  redirect '/bet'
 end
 
 get '/game' do
+  redirect '/game_over' if session[:player_funds] == 0 
   session[:turn] = session[:player_name]
   session[:player_cards] = []
   session[:dealer_cards] = []
@@ -121,10 +126,9 @@ get '/game' do
   player_total = get_total(session[:player_cards])
   current_bet = session[:player_bet]
 
-  if current_bet == 0 || current_bet > session[:player_funds]
-    redirect '/game/bet' 
-  elsif player_total ==  BLACKJACK_AMOUNT 
+  if player_total ==  BLACKJACK_AMOUNT 
     winner!("#{session[:player_name]} hit BlackJack!")
+    redirect '/game/compare'
   end
   erb :game
 end
@@ -132,10 +136,9 @@ end
 post '/game/player/hit' do
   session[:player_cards] << deal
   player_total = get_total(session[:player_cards])
-  if player_total >  BLACKJACK_AMOUNT
-    loser!("#{session[:player_name]} busted with a total of #{player_total}!.")
-  elsif player_total ==  BLACKJACK_AMOUNT
-    winner!("#{session[:player_name]} hit BlackJack!!")
+  if player_total >  BLACKJACK_AMOUNT ||
+   player_total ==  BLACKJACK_AMOUNT    
+    redirect '/game/compare'
   end
   erb :game, layout: false
 end
@@ -143,7 +146,6 @@ end
 post '/game/player/stay' do
   redirect '/game/dealer'
 end
-
 
 get '/game/dealer' do
   session[:turn] = 'Dealer'
@@ -160,8 +162,7 @@ get '/game/dealer' do
   else
     @show_dealer_hit_button = true
   end
-
-  erb :game
+  erb :game, layout: false
 end
 
 post '/game/dealer/hit' do
@@ -169,16 +170,15 @@ post '/game/dealer/hit' do
   redirect '/game/dealer'
 end
 
-get '/game/bet' do
+get '/bet' do
   erb :bet
 end
 
-post '/game/bet' do
-  binding.pry
+post '/bet' do
   current_bet = params[:player_bet]
   if current_bet.to_i <= 0 || current_bet.to_i > session[:player_funds]
-    @error = "You can't bet 0 or more than $#{session[:player_funds]}."
-    erb :bet
+    @error = "You must bet between $1 and $#{session[:player_funds]}."
+    halt erb :bet
   else
     session[:player_bet] = params[:player_bet].to_i
     redirect '/game'
@@ -188,7 +188,11 @@ end
 get '/game/compare' do
   player_total = get_total(session[:player_cards])
   dealer_total = get_total(session[:dealer_cards])
-  if player_total < dealer_total
+  if player_total > BLACKJACK_AMOUNT
+    loser!("#{session[:player_name]} busted with a total of #{player_total}!.")
+  elsif player_total == BLACKJACK_AMOUNT
+    winner!("#{session[:player_name]} hit BlackJack!!")
+  elsif player_total < dealer_total
     loser!("Dealer wins with a total of #{dealer_total}.")
   elsif player_total > dealer_total
     winner!("#{session[:player_name]}'s total is #{player_total}!")

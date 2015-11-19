@@ -1,21 +1,19 @@
 <div id='game'>
+  <%if @loser %>
+    <div class="alert alert-error"><%=@loser%></div>
+  <% end %>
+  <% if @winner %>
+     <div class="alert alert-success"><%=@winner%></div>
+  <% end %>
   <h1>BlackJack</h1>
 
   <h5>Welcome <%= session[:player_name] %></h5>
 
-  <% if !@play_again %>
-    <div class='well'>
-      Current bet is $<%= session[:player_bet] %>. 
-      Available funds: $<%= session[:player_funds] %>.
-    </div> 
-  <% end %> 
-
   <% if @play_again %>
     <p>Your available funds: $<%= session[:player_funds] %>.</p>
       <strong>Play again?</strong>
-      <a href='/game' class='btn btn-primary'>Yes</a>
+      <a href='/bet' class='btn btn-primary'>Yes</a>
       <a href='/game_over' class='btn btn-inverse'>No</a>
-
     <p>
   <% end %>
 
@@ -32,7 +30,7 @@
     <% if @show_dealer_hit_button %>
       <p>
       Dealer has a total of <%= get_total(session[:dealer_cards]) %>. 
-      <form action='/game/dealer/hit' method='post' >
+      <form id='dealer_hit_form' action='/game/dealer/hit' method='post' >
         <input type='submit' class='btn btn-primary' value="See Dealer's Next Card &rarr;" />
       </form>
     <% end %>
@@ -56,5 +54,8 @@
     <form id="stay_form" action="/game/player/stay" method='post'>
       <input type="submit" class="btn btn-warning" value="Stay" />
     </form>
+    <span id='bet-info'>
+      Kelly has $<%=session[:player_funds] %> and has bet $<%= session[:player_bet] %>.
+    </span>
   <% end %>
 </div>
