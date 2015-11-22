@@ -124,7 +124,6 @@ get '/game' do
   session[:deck].shuffle!
   initial_deal
   player_total = get_total(session[:player_cards])
-  current_bet = session[:player_bet]
 
   if player_total ==  BLACKJACK_AMOUNT 
     winner!("#{session[:player_name]} hit BlackJack!")
@@ -136,8 +135,7 @@ end
 post '/game/player/hit' do
   session[:player_cards] << deal
   player_total = get_total(session[:player_cards])
-  if player_total >  BLACKJACK_AMOUNT ||
-   player_total ==  BLACKJACK_AMOUNT    
+  if player_total >  BLACKJACK_AMOUNT || player_total ==  BLACKJACK_AMOUNT    
     redirect '/game/compare'
   end
   erb :game, layout: false
